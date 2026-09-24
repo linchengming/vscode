@@ -1080,6 +1080,13 @@ export namespace ConfigKey {
 
 	export const RateLimitAutoSwitchToAuto = defineSetting<boolean>('chat.rateLimitAutoSwitchToAuto', ConfigType.Simple, false, vBoolean());
 
+	/** Silently retry a failed request instead of showing the error with a "Try Again" button. */
+	export const AutoRetryEnabled = defineSetting<boolean>('chat.autoRetry.enabled', ConfigType.Simple, false, vBoolean());
+	/** How long to wait between silent auto-retries, in seconds. */
+	export const AutoRetryIntervalSeconds = defineSetting<number>('chat.autoRetry.intervalSeconds', ConfigType.Simple, 60, vNumber());
+	/** How many silent auto-retries to attempt before surfacing the error. 0 means unlimited. */
+	export const AutoRetryMaxAttempts = defineSetting<number>('chat.autoRetry.maxAttempts', ConfigType.Simple, 0, vNumber());
+
 	/** Use the Messages API instead of Chat Completions when supported */
 	export const UseAnthropicMessagesApi = defineSetting<boolean | undefined>('chat.anthropic.useMessagesApi', ConfigType.ExperimentBased, true);
 	/** Context editing mode for Anthropic Messages API. 'off' disables context editing. */

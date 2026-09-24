@@ -2937,6 +2937,18 @@
         "icon": "$(broadcast)"
       },
       {
+        "command": "github.copilot.chat.autoRetry.enable",
+        "title": "%github.copilot.command.autoRetry.enable%",
+        "category": "Chat",
+        "icon": "$(sync-ignored)"
+      },
+      {
+        "command": "github.copilot.chat.autoRetry.disable",
+        "title": "%github.copilot.command.autoRetry.disable%",
+        "category": "Chat",
+        "icon": "$(sync)"
+      },
+      {
         "command": "github.copilot.sessionSync.deleteSessions",
         "title": "%github.copilot.command.sessionSync.deleteSessions%",
         "category": "Chat",
@@ -3373,6 +3385,23 @@
             "tags": [
               "onExp"
             ]
+          },
+          "github.copilot.chat.autoRetry.enabled": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "%github.copilot.config.autoRetry.enabled%"
+          },
+          "github.copilot.chat.autoRetry.intervalSeconds": {
+            "type": "number",
+            "default": 60,
+            "minimum": 1,
+            "markdownDescription": "%github.copilot.config.autoRetry.intervalSeconds%"
+          },
+          "github.copilot.chat.autoRetry.maxAttempts": {
+            "type": "number",
+            "default": 0,
+            "minimum": 0,
+            "markdownDescription": "%github.copilot.config.autoRetry.maxAttempts%"
           },
           "github.copilot.chat.customInstructionsInSystemMessage": {
             "type": "boolean",
@@ -5644,6 +5673,16 @@
           "command": "github.copilot.chat.otel.statusActive",
           "when": "github.copilot.otel.enabledExplicitly && isSessionsWindow",
           "group": "otel@1"
+        },
+        {
+          "command": "github.copilot.chat.autoRetry.enable",
+          "when": "!github.copilot.chat.autoRetryEnabled",
+          "group": "autoRetry@1"
+        },
+        {
+          "command": "github.copilot.chat.autoRetry.disable",
+          "when": "github.copilot.chat.autoRetryEnabled",
+          "group": "autoRetry@1"
         }
       ],
       "chat/newSession": [

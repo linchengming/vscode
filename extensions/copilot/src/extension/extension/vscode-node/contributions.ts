@@ -21,6 +21,7 @@ import { InternalConfigurationInformationCommandContribution } from '../../confi
 import { ContextKeysContribution } from '../../contextKeys/vscode-node/contextKeys.contribution';
 import { ByokUtilityModelNotificationContribution } from '../../chatInputNotification/vscode-node/byokUtilityModel.contribution';
 import { AiMappedEditsContrib } from '../../conversation/vscode-node/aiMappedEditsContrib';
+import { AutoRetryStatusContribution } from '../../conversation/vscode-node/autoRetryStatus.contribution';
 import { ConversationFeature } from '../../conversation/vscode-node/conversationFeature';
 import { FeedbackCommandContribution } from '../../conversation/vscode-node/feedbackContribution';
 import { LanguageModelAccess } from '../../conversation/vscode-node/languageModelAccess';
@@ -77,6 +78,7 @@ export const vscodeNodeContributions: IExtensionContributionFactory[] = [
 	asContributionFactory(FetcherTelemetryContribution),
 	asContributionFactory(PowerStateLogger),
 	asContributionFactory(ContextKeysContribution),
+	asContributionFactory(AutoRetryStatusContribution),
 	asContributionFactory(ByokUtilityModelNotificationContribution),
 	asContributionFactory(CopilotDebugCommandContribution),
 	asContributionFactory(DebugCommandsContribution),

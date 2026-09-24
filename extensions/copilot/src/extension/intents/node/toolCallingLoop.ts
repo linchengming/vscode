@@ -59,6 +59,7 @@ import { IToolsService, ToolCallCancelledError } from '../../tools/common/toolsS
 import { ReadFileParams } from '../../tools/node/readFileTool';
 import { isHookAbortError, processHookResults } from './hookResultProcessor';
 import { applyConfiguredPromptOverrides } from './promptOverride';
+import { UserAutoRetry } from './userAutoRetry';
 
 export const enum ToolCallLimitBehavior {
 	Confirm,
@@ -1433,6 +1434,7 @@ export abstract class ToolCallingLoop<TOptions extends IToolCallingLoopOptions =
 		let lastRequestMessagesStartingIndexForRun: number | undefined;
 		let stopHookActive = false;
 		const sessionId = this.options.conversation.sessionId;
+		const userAutoRetry = new UserAutoRetry(this._configurationService, this._logService);
 
 		// Store span context so runOne() can emit tools_available on first call
 		this.agentSpan = agentSpan;
@@ -1479,6 +1481,7 @@ export abstract class ToolCallingLoop<TOptions extends IToolCallingLoopOptions =
 				};
 
 				this.toolCallRounds.push(result.round);
+				userAutoRetry.onResponse(result.response);
 				this._sessionTranscriptService.logAssistantTurnEnd(sessionId, turnId);
 				agentSpan?.addEvent('turn_end', { turnId, ...(chatSessionId ? { [CopilotChatAttr.CHAT_SESSION_ID]: chatSessionId } : {}) });
 
@@ -1492,6 +1495,16 @@ export abstract class ToolCallingLoop<TOptions extends IToolCallingLoopOptions =
 				if (!result.round.toolCalls.length || result.response.type !== ChatFetchResponseType.Success) {
 					// If cancelled, don't run stop hooks - just break immediately
 					if (token.isCancellationRequested) {
+						break;
+					}
+
+					// Silent auto-retry: drop the failed round and don't count it against the tool call budget.
+					if (userAutoRetry.shouldRetry(result.response)) {
+						this.toolCallRounds.pop();
+						i = Math.max(0, i - 1);
+						if (await userAutoRetry.wait(result.response, outputStream, token)) {
+							continue;
+						}
 						break;
 					}
 
@@ -1571,6 +1584,7 @@ export abstract class ToolCallingLoop<TOptions extends IToolCallingLoopOptions =
 					break;
 				}
 			} catch (e) {
+				userAutoRetry.resolveProgress();
 				if (isCancellationError(e) && lastResult) {
 					break;
 				}
@@ -1580,6 +1594,7 @@ export abstract class ToolCallingLoop<TOptions extends IToolCallingLoopOptions =
 		}
 
 		this.resolveAutopilotProgress();
+		userAutoRetry.resolveProgress();
 
 		this.emitReadFileTrajectories().catch(err => {
 			this._logService.error('Error emitting read file trajectories', err);
